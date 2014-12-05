@@ -4,80 +4,70 @@
  * Module dependencies
  * @type {exports}
  */
-var Emitter = require('events').EventEmitter;
+var events = require('events');
 
 /**
- * `Auth` constructor
- * @constructor
+ * @type {events.EventEmitter}
+ */
+var emitter = new events.EventEmitter();
+
+/**
+ * Check if req is authenticated
+ * The scope inside of this function will be that of req.
+ * @return {Boolean}
  * @public
  */
-function Auth() {
-  
-  var self = this;
+exports.isAuthenticated = function() {
+  return !!this.user;
+};
 
-  self.emitter = new Emitter();
+/**
+ * Log in user
+ * The scope inside of this function will be that of req.
+ * @param  {User} user
+ * @param  {Object} options
+ */
+exports.logIn = function(user) {
+  this.session.user = user.id;
+};
 
-  /**
-   * Check if req is authenticated
-   * The scope inside of this function will be that of req.
-   * @return {Boolean}
-   */
-  this.isAuthenticated = function() {
-    return !!this.user;
-  };
+/**
+ * Log out user
+ * The scope inside of this function will be that of req.
+ * @param  {User} user
+ * @param  {Object} options
+ * @public
+ */
+exports.logOut = function() {
+  delete this.session.user;
+};
 
-  /**
-   * Log in user
-   * The scope inside of this function will be that of req.
-   * @param  {User} user
-   * @param  {Object} options
-   */
-  this.logIn = function(user) {
-    this.session.user = user.id;
-  };
-
-  /**
-   * Log out user
-   * The scope inside of this function will be that of req.
-   * @param  {User} user
-   * @param  {Object} options
-   * @public
-   */
-  this.logOut = function() {
-    delete this.session.user;
-  };
-
-  /**
-   * Deserializer user
-   * @param  {Function} callback
-   * @return {Function}
-   */
-  this.deserializeUser = function(callback) {
-    return function(req, res, next) {
-      if (req.session && req.session.user) {
-        callback(req.session.user, function(err, user) {
-          self.emitter.emit('deserialized', req, res, next, err, user);
-        });
-      } else {
-        next();
-      }
-    }.bind(this);
-  };
-
-  /**
-   * Attach user to req when deserialized
-   * @param  {http.IncomingMessage} req
-   * @param  {http.ServerReponse} res
-   * @param  {Function} next
-   * @param  {Error} err
-   * @param  {User} user
-   * @public
-   */
-  this.emitter.on('deserialized', function(req, res, next, err, user) {
-    req.user = user;
+/**
+ * Deserializer user
+ * @param  {Function} callback
+ * @return {Function}
+ */
+exports.deserializeUser = function(callback) {
+  return function(req, res, next) {
+    if (req.session && req.session.user) {
+      return callback(req.session.user, function(err, user) {
+        emitter.emit('deserialized', req, res, next, err, user);
+      });
+    }
     next();
-  });
+  };
+};
 
-}
-
-module.exports = new Auth();
+/**
+ * Attach user to req when deserialized
+ * @param  {http.IncomingMessage} req
+ * @param  {http.ServerReponse} res
+ * @param  {Function} next
+ * @param  {Error} err
+ * @param  {User} user
+ * @public
+ */
+emitter.on('deserialized', function(req, res, next, err, user) {
+  req.user = user;
+  next();
+});
