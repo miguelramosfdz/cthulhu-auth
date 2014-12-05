@@ -1,0 +1,26 @@
+{
+  "name": "cthulhu-auth",
+  "version": "1.0.0",
+  "description": "A collection of social authentication strategies.",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jasmine-node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theponti/cthulhu-auth"
+  },
+  "keywords": [
+    "authentication",
+    "social"
+  ],
+  "author": "CJ Ponti <@cjponti>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theponti/cthulhu-auth/issues"
+  },
+  "homepage": "https://github.com/theponti/cthulhu-auth"
+}
