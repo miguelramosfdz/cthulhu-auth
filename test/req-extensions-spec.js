@@ -16,7 +16,7 @@ describe("Util: auth", function() {
     req = null;
   });
 
-  describe("#isAuthenticated", function() {
+  describe(".isAuthenticated()", function() {
     it("should return true if user", function() {
       req.session.user = true;
       expect(auth.isAuthenticated.apply(req)).toEqual(true);
@@ -27,7 +27,7 @@ describe("Util: auth", function() {
     });
   });
 
-  describe("#logIn", function() {
+  describe(".logIn()", function() {
     it("should set value of req.session", function() {
       auth.logIn.call(req, { id: "foo" });
       expect(req.session.user).toEqual("foo");
@@ -35,22 +35,18 @@ describe("Util: auth", function() {
   });
 
   describe(".deserializeUser()", function() {
-
     var callback = jasmine.createSpy('callback');
-
     it("should call next if no req.session.user", function() {
       req.session.user = undefined;
       auth.deserializeUser(callback)(req, undefined, next);
       expect(next).toHaveBeenCalled();
     });
-
     it('should call callback if req.session.user', function() {
       req.session.user = '1234';
       auth.deserializeUser(callback)(req, undefined, next);
       expect(callback).toHaveBeenCalled();
       expect(next).not.toHaveBeenCalled();
     });
-
   });
 
   describe(".logOut()", function() {
