@@ -7,7 +7,7 @@
  * @public
  */
 exports.isAuthenticated = function() {
-  return !!this.user;
+  return !!this.session.user;
 };
 
 /**
