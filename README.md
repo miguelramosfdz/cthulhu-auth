@@ -8,7 +8,7 @@ and everyauth but comes coupled many strategies.
   ```js
     var app = require('cthulhu');
     var router = app.Router();
-    var facebookAuth = require('cthulhu-auth').facebook({
+    var facebookAuth = require('cthulhu-auth').Facebook({
       app_id: 'APPID',
       app_secret: 'APPSECRET',
       callback_url: '/auth/facebook'

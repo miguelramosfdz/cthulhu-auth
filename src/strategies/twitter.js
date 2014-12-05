@@ -11,7 +11,7 @@ var oauth = require("oauth");
 module.exports = function Twitter(options) {
 
   var self = _.extend({}, options);
-  
+
   /**
    * Check for necessary configurations
    */
@@ -25,7 +25,7 @@ module.exports = function Twitter(options) {
   self.access_token_url = "https://twitter.com/oauth/access_token";
   self.profile_url = "https://api.twitter.com/1.1/account/verify_credentials.json";
   self.authorize_url = "https://twitter.com/oauth/authorize?oauth_token=";
-  
+
   /**
    * Twitter OAuth consumer
    * @type {oauth.OAuth}
@@ -73,7 +73,8 @@ module.exports = function Twitter(options) {
          * Save token and tokenSecret to user
          */
         self.get_profile(access_token, secret, function (err, profile) {
-          req._oauth = {
+          req.oauth = {
+            provider: 'twitter',
             token: access_token,
             secret: secret,
             profile: profile

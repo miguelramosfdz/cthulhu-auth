@@ -15,7 +15,7 @@ var REST = require("restler");
  * @constructor
  */
 module.exports = function Google(config) {
-  
+
   var self = _.extend({}, config);
 
   /**
@@ -53,7 +53,8 @@ module.exports = function Google(config) {
       var access_token = data.access_token;
 
       self.get_profile(access_token, function(profile) {
-        req._oauth = {
+        req.oauth = {
+          provider: 'google',
           token: access_token,
           profile: profile
         };

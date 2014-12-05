@@ -66,13 +66,11 @@ module.exports = function Foursquare(options) {
            * Save token and profile to user
            */
           self.get_profile(access_token, function(data) {
-            var profile = data.response.user;
-
-            req._oauth = {
+            req.oauth = {
+              provider: 'foursquare',
               token: access_token,
-              profile: profile
+              profile: data.response.user
             };
-
             return next();
           });
         }

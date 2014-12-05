@@ -70,7 +70,8 @@ module.exports = function Facebook(options) {
        * Get user's Facebook profile
        */
       self.get_profile(token, function(profile) {
-        req._oauth = {
+        req.oauth = {
+          provider: 'facebook',
           token: token,
           profile: profile
         };
@@ -78,7 +79,7 @@ module.exports = function Facebook(options) {
       });
     });
   };
-      
+
   self.get_profile = function(access_token, callback) {
     REST.get(self.profile_url+qs.stringify({
       access_token: access_token

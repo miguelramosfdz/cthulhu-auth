@@ -55,7 +55,8 @@ function Github(config) {
        * Save token and profile to user
        */
       self.get_profile(access_token, function(profile) {
-        req._oauth = {
+        req.oauth = {
+          provider: 'github',
           token: access_token,
           profile: profile
         };
@@ -85,4 +86,3 @@ function Github(config) {
 module.exports = function(config) {
   return new Github(config);
 };
-
