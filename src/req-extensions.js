@@ -1,17 +1,6 @@
 "use strict";
 
 /**
- * Module dependencies
- * @type {exports}
- */
-var events = require('events');
-
-/**
- * @type {events.EventEmitter}
- */
-var emitter = new events.EventEmitter();
-
-/**
  * Check if req is authenticated
  * The scope inside of this function will be that of req.
  * @return {Boolean}
@@ -51,23 +40,10 @@ exports.deserializeUser = function(callback) {
   return function(req, res, next) {
     if (req.session && req.session.user) {
       return callback(req.session.user, function(err, user) {
-        emitter.emit('deserialized', req, res, next, err, user);
+        req.user = user;
+        next();
       });
     }
     next();
   };
 };
-
-/**
- * Attach user to req when deserialized
- * @param  {http.IncomingMessage} req
- * @param  {http.ServerReponse} res
- * @param  {Function} next
- * @param  {Error} err
- * @param  {User} user
- * @public
- */
-emitter.on('deserialized', function(req, res, next, err, user) {
-  req.user = user;
-  next();
-});

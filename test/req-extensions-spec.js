@@ -6,7 +6,7 @@ describe("Util: auth", function() {
 
   beforeEach(function() {
     next = jasmine.createSpy('next');
-    auth = require('../src/auth');
+    auth = require('../src/req-extensions');
     req = http.IncomingMessage;
     req.session = {};
   });
