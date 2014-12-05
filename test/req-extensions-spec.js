@@ -18,7 +18,7 @@ describe("Util: auth", function() {
 
   describe("#isAuthenticated", function() {
     it("should return true if user", function() {
-      req.user = true;
+      req.session.user = true;
       expect(auth.isAuthenticated.apply(req)).toEqual(true);
     });
     it("should return false if no user", function() {
