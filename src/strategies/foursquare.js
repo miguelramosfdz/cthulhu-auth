@@ -6,8 +6,7 @@
  * @api private
  */
 var _ = require('lodash');
-var oauth = require('oauth');
-var REST = require('restler');
+var rest = require('superagent');
 var qs = require("querystring");
 
 /**
@@ -18,7 +17,7 @@ var qs = require("querystring");
  */
 module.exports = function Foursquare(options) {
 
-  var self = _.extend({}, options);
+  var strategy = _.extend({}, options);
 
   /**
    * Check for necessary elements
@@ -29,63 +28,59 @@ module.exports = function Foursquare(options) {
     }
   });
 
-  self.request_token_url = "https://foursquare.com/oauth2/authenticate?";
-  self.access_token_url = "https://foursquare.com/oauth2/access_token";
-  self.profile_url = "https://api.foursquare.com/v2/users/self?";
+  strategy.authorizeUrl = "https://foursquare.com/oauth2/authenticate?";
+  strategy.tokenUrl = "https://foursquare.com/oauth2/access_token";
+  strategy.profileUrl = "https://api.foursquare.com/v2/users/self?";
 
-  self.consumer = new oauth.OAuth2(
-    self.client_id,
-    self.client_secret,
-    "https://foursquare.com/oauth2/",
-    "authenticate",
-    "access_token",
-    null
-  );
-
-  self.authorize = function(req, res) {
-    res.redirect(self.request_token_url+qs.stringify({
+  strategy.authorize = function(req, res) {
+    res.redirect(strategy.authorizeUrl+qs.stringify({
       response_type: "code",
-      client_id: self.client_id,
-      redirect_uri: self.callback_url
+      client_id: strategy.client_id,
+      redirect_uri: strategy.callback_url
     }));
   };
 
-  self.callback = function(req, res, next) {
-    self.consumer.getOAuthAccessToken(
-      req.query.code,
-      {
-        redirect_uri: self.callback_url,
-        grant_type:'authorization_code'
-      },
-      function(e, access_token, refresh_token, results) {
-        if (e) {
-          req.flash("error", "Error getting Foursquare access token.");
-          res.redirect("/account");
-        } else {
-          /**
-           * Save token and profile to user
-           */
-          self.get_profile(access_token, function(data) {
-            req.oauth = {
-              provider: 'foursquare',
-              token: access_token,
-              profile: data.response.user
-            };
-            return next();
-          });
-        }
-      }
-    );
+  strategy.callback = function(req, res, next) {
+    rest
+      .get(strategy.tokenUrl)
+      .query({
+        client_id: strategy.client_id,
+        client_secret: strategy.client_secret,
+        grant_type: 'authorization_code',
+        redirect_uri: strategy.callback_url,
+        code: req.query.code
+      })
+      .end(strategy.onCode.bind({}, req, res, next));
   };
 
-  self.get_profile = function(access_token, callback) {
-    if (access_token) {
-      REST.get(self.profile_url+qs.stringify({
-        oauth_token: access_token,
-        v: "20140806"
-      })).on("complete", callback);
+  strategy.onCode = function(req, res, next, err, response, body) {
+    if (err) {
+      return next(err);
     }
+
+    var token = body.access_token;
+
+    /**
+     * Get profile of user
+     */
+    rest
+      .get(strategy.profileUrl)
+      .query({
+        oauth_token: body.access_token,
+        v: "20140806"
+      })
+      .end(strategy.onProfile.bind(body.access_token, req, next));
   };
 
-  return self;
+  strategy.onProfile = function(token, req, next, err, response, body) {
+    req.oauth = {
+      provider: 'foursquare',
+      token: token,
+      profile: body.user
+    };
+    return next();
+  };
+
+  return strategy;
+
 };
