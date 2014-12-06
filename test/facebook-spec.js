@@ -4,7 +4,7 @@ describe('Strategy: Facebook', function() {
 
   var auth, res, query, end;
   var request = require('superagent');
-  var facebook = require('../src').Facebook;
+  var facebook = require('../src').FacebookStrategy;
 
   beforeEach(function() {
     auth = facebook({

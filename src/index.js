@@ -7,11 +7,42 @@ var middleware = require('./middleware');
  * Strategies
  * @type {exports}
  */
-exports.Facebook = require('./strategies/facebook');
-exports.Google = require('./strategies/google');
-exports.Twitter = require('./strategies/twitter');
-exports.Foursquare = require('./strategies/foursquare');
-exports.Github = require('./strategies/github');
+var GithubStrategy =
+exports.GithubStrategy = require('./strategies/github');
+
+var GoogleStrategy =
+exports.GoogleStrategy = require('./strategies/google');
+
+var TwitterStrategy =
+exports.TwitterStrategy = require('./strategies/twitter');
+
+var FacebookStrategy =
+exports.FacebookStrategy = require('./strategies/facebook');
+
+var FoursquareStrategy =
+exports.FoursquareStrategy = require('./strategies/foursquare');
+
+exports.use = function(strategy, config) {
+  switch(strategy) {
+    case 'Facebook':
+      exports.Facebook = FacebookStrategy(config);
+      break;
+    case 'Google':
+      exports.Google = GoogleStrategy(config);
+      break;
+    case 'Foursquare':
+      exports.Foursquare = FoursquareStrategy(config);
+      break;
+    case 'Twitter':
+      exports.Twitter = TwitterStrategy(config);
+      break;
+    case 'Github':
+      exports.Github = GithubStrategy(config);
+      break;
+    default:
+      throw new Error('Must supply valid strategy.');
+  }
+};
 
 // Export deserializeUser
 exports.deserializeUser = middleware.deserializeUser;

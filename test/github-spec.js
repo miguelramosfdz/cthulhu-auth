@@ -5,7 +5,7 @@ describe('Strategy: Github', function() {
   var auth, res, query, end, data;
   var fakerequest = require('./fake-request');
   var request = fakerequest.request;
-  var github = require('../src').Github;
+  var github = require('../src').GithubStrategy;
 
   beforeEach(function() {
     auth = github({

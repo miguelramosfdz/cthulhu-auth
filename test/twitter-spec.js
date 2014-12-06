@@ -2,7 +2,7 @@
 
 describe('Util: OAuth', function() {
 
-  var twitter = require('../src').Twitter;
+  var twitter = require('../src').TwitterStrategy;
 
   it('should throw error if no client_id', function() {
     expect(twitter.bind(this, {

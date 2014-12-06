@@ -4,7 +4,7 @@ describe('Strategy: Foursquare', function() {
 
   var qs = require('querystring');
   var request = require('superagent');
-  var foursquare = require('../src').Foursquare;
+  var foursquare = require('../src').FoursquareStrategy;
 
   var auth, res, query, end;
 

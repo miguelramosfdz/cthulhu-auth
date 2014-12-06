@@ -3,12 +3,11 @@
 describe('Strategy: Google', function() {
 
   var auth, res, query, data, end;
-  var google = require('../src').Google;
+  var google = require('../src').GoogleStrategy;
   var fakerequest = require('./fake-request');
   var request = fakerequest.request;
 
   beforeEach(function() {
-    console.log(google);
     auth = google({
       client_id: 'fooId',
       client_secret: 'fooSecret',
