@@ -26,7 +26,7 @@ module.exports = function Facebook(options) {
 
   var strategy = _.extend({}, options);
 
-  strategy.autorizeUrl = "https://www.facebook.com/dialog/oauth?";
+  strategy.authorizeUrl = "https://www.facebook.com/dialog/oauth?";
   strategy.tokenUrl = "https://graph.facebook.com/oauth/access_token?";
   strategy.profileUrl = "https://graph.facebook.com/me?";
 

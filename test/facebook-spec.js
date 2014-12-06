@@ -3,6 +3,7 @@
 describe('Strategy: Facebook', function() {
 
   var auth, res, query, end;
+  var qs = require('querystring');
   var request = require('superagent');
   var facebook = require('../src').FacebookStrategy;
 
@@ -49,10 +50,31 @@ describe('Strategy: Facebook', function() {
     })).toThrow('Must supply Facebook with callback_url');
   });
 
+  it('should have urls', function() {
+    expect(auth.authorizeUrl).not.toEqual(undefined);
+    expect(auth.tokenUrl).not.toEqual(undefined);
+    expect(auth.profileUrl).not.toEqual(undefined);
+  });
+
   it('should set Facebook', function() {
     expect(auth.app_id).toEqual('fooId');
     expect(auth.app_secret).toEqual('fooSecret');
     expect(auth.callback_url).toEqual('http://foo.com');
+  });
+
+  describe('.authorize()', function() {
+    it('should call res.redirect with correct url', function() {
+      res.locals = {
+        _csrf: '1234'
+      };
+      auth.authorize(null, res, null);
+      expect(res.redirect).toHaveBeenCalledWith(auth.authorizeUrl+qs.stringify({
+        client_id: 'fooId',
+        state: res.locals._csrf,
+        redirect_uri: 'http://foo.com',
+        scope: "public_profile,email"
+      }));
+    });
   });
 
   describe('.callback()', function() {
