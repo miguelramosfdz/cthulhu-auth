@@ -28,7 +28,7 @@ module.exports = function Facebook(options) {
   var strategy = _.extend({}, options);
 
   strategy.autorizeUrl = "https://www.facebook.com/dialog/oauth?";
-  strategy.callbackUrl = "https://graph.facebook.com/oauth/access_token?";
+  strategy.tokenUrl = "https://graph.facebook.com/oauth/access_token?";
   strategy.profileUrl = "https://graph.facebook.com/me?";
 
   /**
@@ -48,7 +48,7 @@ module.exports = function Facebook(options) {
 
   strategy.callback = function(req, res, next) {
     request
-      .get(strategy.callbackUrl)
+      .get(strategy.tokenUrl)
       .query({
         client_id: strategy.app_id,
         redirect_uri: strategy.callback_url,
@@ -59,6 +59,10 @@ module.exports = function Facebook(options) {
   };
 
   strategy.onCode = function(req, next, err, response, body) {
+    if (err) {
+      return next(err);
+    }
+
     /**
      * Parse query string returned from Facebook
      */
@@ -75,7 +79,7 @@ module.exports = function Facebook(options) {
       .query({
         access_token: token
       })
-      .end(strategy.onProfile);
+      .end(strategy.onProfile.bind({}, token, req, next));
   };
 
   /**
@@ -88,11 +92,17 @@ module.exports = function Facebook(options) {
    * @param {object} body
    */
   strategy.onProfile = function(token, req, next, err, response, body) {
+    if (err) {
+      return next(err);
+    }
+
+    // Set req.oauth
     req.oauth = {
       provider: 'facebook',
       token: token,
       profile: body
     };
+
     return next();
   };
 

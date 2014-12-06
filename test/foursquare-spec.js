@@ -17,13 +17,10 @@ describe('Strategy: Foursquare', function() {
     res = {
       redirect: jasmine.createSpy('redirect')
     };
-
     end = jasmine.createSpy('query');
-
     query = jasmine.createSpy('query').andReturn({
       end: end
     });
-
     spyOn(request, 'get').andReturn({
       query: query
     });
@@ -112,5 +109,5 @@ describe('Strategy: Foursquare', function() {
       expect(next).toHaveBeenCalled();
     });
   });
-  
+
 });
