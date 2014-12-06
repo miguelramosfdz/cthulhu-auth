@@ -10,14 +10,11 @@ var rest = require('superagent');
 var qs = require("querystring");
 
 /**
- *
+ * Factory function for generating Foursquare authentication strategy
  * @param {Object} options
  * @returns {Object}
- * @constructor
  */
 module.exports = function Foursquare(options) {
-
-  var strategy = _.extend({}, options);
 
   /**
    * Check for necessary elements
@@ -27,6 +24,8 @@ module.exports = function Foursquare(options) {
       throw new Error("Must supply Foursquare Strategy with "+key);
     }
   });
+
+  var strategy = _.extend({}, options);
 
   strategy.authorizeUrl = "https://foursquare.com/oauth2/authenticate?";
   strategy.tokenUrl = "https://foursquare.com/oauth2/access_token";

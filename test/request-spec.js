@@ -1,12 +1,12 @@
-describe("Util: auth", function() {
-  "use strict";
+'use strict';
 
+describe('request', function() {
   var req, auth, next;
   var http = require('http');
 
   beforeEach(function() {
     next = jasmine.createSpy('next');
-    auth = require('../src/req-extensions');
+    auth = require('../src').request;
     req = http.IncomingMessage;
     req.session = {};
   });
@@ -16,27 +16,27 @@ describe("Util: auth", function() {
     req = null;
   });
 
-  describe(".isAuthenticated()", function() {
-    it("should return true if user", function() {
+  describe('.isAuthenticated()', function() {
+    it('should return true if user', function() {
       req.session.user = true;
       expect(auth.isAuthenticated.apply(req)).toEqual(true);
     });
-    it("should return false if no user", function() {
+    it('should return false if no user', function() {
       req.user = false;
       expect(auth.isAuthenticated.apply(req)).toEqual(false);
     });
   });
 
-  describe(".logIn()", function() {
-    it("should set value of req.session", function() {
-      auth.logIn.call(req, { id: "foo" });
-      expect(req.session.user).toEqual("foo");
+  describe('.logIn()', function() {
+    it('should set value of req.session', function() {
+      auth.logIn.call(req, { id: 'foo' });
+      expect(req.session.user).toEqual('foo');
     });
   });
 
-  describe(".deserializeUser()", function() {
+  describe('.deserializeUser()', function() {
     var callback = jasmine.createSpy('callback');
-    it("should call next if no req.session.user", function() {
+    it('should call next if no req.session.user', function() {
       req.session.user = undefined;
       auth.deserializeUser(callback)(req, undefined, next);
       expect(next).toHaveBeenCalled();
@@ -49,8 +49,8 @@ describe("Util: auth", function() {
     });
   });
 
-  describe(".logOut()", function() {
-    it("should set value of req.session", function() {
+  describe('.logOut()', function() {
+    it('should set value of req.session', function() {
       auth.logOut.call(req);
       expect(req.session.user).toEqual(undefined);
     });

@@ -9,17 +9,16 @@ var request = require('superagent');
 var qs = require('querystring');
 
 /**
- * Export Facebook module
+ * Factory function for generating Facebook authentication strategy
  * @param {Object} options
  * @returns {module}
- * @constructor
  */
 module.exports = function Facebook(options) {
 
   /**
-   * Check for necessary elements
+   * Check for necessary configurations
    */
-  ['app_id', 'callback_url', 'app_secret'].forEach(function(key) {
+  _.each(['app_id', 'callback_url', 'app_secret'], function(key) {
     if (!options[key]) {
       throw new Error("Must supply Facebook with "+key);
     }

@@ -10,10 +10,9 @@ var qs = require('querystring');
 var request = require('superagent');
 
 /**
- * Factory function for Github authentication strategy
+ * Factory function for generating Github authentication strategy
  * @param {Object} config
  * @returns {Object}
- * @public
  */
 module.exports = function GithubStrategy(config) {
 

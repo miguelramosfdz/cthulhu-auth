@@ -8,6 +8,11 @@
 var _ = require('lodash');
 var oauth = require("oauth");
 
+/**
+ * Factory function for creating Twitter authentication strategy
+ * @param config
+ * @returns {object}
+ */
 module.exports = function Twitter(options) {
 
   var strategy = _.extend({}, options);

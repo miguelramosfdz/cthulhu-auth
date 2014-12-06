@@ -1,18 +1,7 @@
 "use strict";
 
-/**
- * Module dependencies
- * @type {exports}
- * @private
- */
-var _ = require('lodash');
-
-/**
- * Application dependencies
- * @type {exports}
- * @private
- */
-var requestExtentions = require("./req-extensions");
+var request =
+exports.request = require("./request");
 
 /**
  * Strategies
@@ -31,9 +20,9 @@ exports.Github = require('./strategies/github');
  */
 exports.initialize = function(config) {
   return function(req, res, next) {
-    req.isAuthenticated = requestExtentions.isAuthenticated;
-    req.login = requestExtentions.logIn;
-    req.logout = requestExtentions.logOut;
+    req.isAuthenticated = request.isAuthenticated;
+    req.login = request.logIn;
+    req.logout = request.logOut;
     next();
   };
 };
