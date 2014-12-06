@@ -2,8 +2,9 @@
 
 describe('Strategy: Github', function() {
 
-  var auth, query, end, res;
-  var request = require('superagent');
+  var auth, res, query, end, data;
+  var fakerequest = require('./fake-request');
+  var request = fakerequest.request;
   var github = require('../src').Github;
 
   beforeEach(function() {
@@ -15,15 +16,14 @@ describe('Strategy: Github', function() {
     res = {
       redirect: jasmine.createSpy('redirect')
     };
-    end = jasmine.createSpy('query');
-    query = jasmine.createSpy('query').andReturn({
-      end: end
-    });
+    data = fakerequest.data;
+    query = fakerequest.query;
+    end = fakerequest.end;
     spyOn(request, 'get').andReturn({
       query: query
     });
     spyOn(request, 'post').andReturn({
-      query: query
+      data: data
     });
   });
 
@@ -62,7 +62,7 @@ describe('Strategy: Github', function() {
     it('should send GET request with correct params', function() {
       auth.callback({ query: { code: '1234'} });
       expect(request.post).toHaveBeenCalledWith(auth.tokenUrl);
-      expect(query).toHaveBeenCalledWith({
+      expect(data).toHaveBeenCalledWith({
         client_id: 'fooId',
         redirect_uri: 'http://foo.com',
         client_secret: 'fooSecret',
