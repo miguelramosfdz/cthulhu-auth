@@ -2,20 +2,22 @@
 
 /**
  * Module dependencies
+ * @type {exports}
+ * @private
  */
 var _ = require('lodash');
-var REST = require('restler');
 var qs = require('querystring');
+var request = require('superagent');
 
 /**
- * `Github` constructor
- * @param {Object} options
+ * Factory function for Github authentication strategy
+ * @param {Object} config
  * @returns {Object}
- * @constructor
+ * @public
  */
-function Github(config) {
+module.exports = function GithubStrategy(config) {
 
-  var self = _.extend(this, config);
+  var strategy = _.extend({}, config);
 
   /**
    * Check for necessary configurations
@@ -26,63 +28,83 @@ function Github(config) {
     }
   });
 
-  this.request_token_url = 'https://github.com/login/oauth/authorize?';
-  this.access_token_url = 'https://github.com/login/oauth/access_token';
-  this.profile_url = 'https://api.github.com/user?';
+  strategy.authorizeUrl = 'https://github.com/login/oauth/authorize?';
+  strategy.tokenUrl = 'https://github.com/login/oauth/access_token';
+  strategy.profileUrl = 'https://api.github.com/user?';
 
-  this.authorize = function GithubAuthorize(req, res) {
-    res.redirect(self.request_token_url+qs.stringify({
-      client_id: self.client_id,
+  strategy.authorize = function(req, res) {
+    res.redirect(strategy.authorizeUrl+qs.stringify({
+      client_id: strategy.client_id,
       scope: 'user,repo,user:email',
-      redirect_uri: self.callback_url,
+      redirect_uri: strategy.callback_url,
       state: res.locals._csrf
     }));
   };
 
-  this.callback = function GithubAuthCallback(req, res, next) {
-    REST.post(self.access_token_url, {
-      query: {
-        client_id: self.client_id,
-        client_secret: self.client_secret,
+  /**
+   * Handle callback request from provider
+   * @param  {http.IncomingMessage}   req
+   * @param  {http.ServerResponse}   res
+   * @param  {Function} next
+   */
+  strategy.callback = function(req, res, next) {
+    request
+      .post(strategy.tokenUrl)
+      .query({
+        client_id: strategy.client_id,
+        client_secret: strategy.client_secret,
         code: req.query.code,
-        redirect_uri: self.callback_url
-      }
-    }).on('complete', function(data) {
-      var query = qs.parse(data);
-      var access_token = query.access_token;
-
-      /**
-       * Save token and profile to user
-       */
-      self.get_profile(access_token, function(profile) {
-        req.oauth = {
-          provider: 'github',
-          token: access_token,
-          profile: profile
-        };
-        return next();
-      });
-    });
+        redirect_uri: strategy.callback_url
+      })
+      .end(strategy.onCode.bind({}, req, next));
   };
 
   /**
-   * Get user's Github profile
-   * @param  {String}   access_token
-   * @param  {Function} callback
+   * Retrieve user profile when token is received
+   * @param {http.IncomingMessage}   req
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   response
+   * @param {object}   body
    */
-  this.get_profile = function GithubGetProfile(access_token, callback) {
-    REST.get(self.profile_url + qs.stringify({
-      access_token: access_token
-    })).on('complete', callback);
+  strategy.onCode = function(req, next, err, response, body) {
+    if (err) {
+      return next(err);
+    }
+    
+    var query = qs.parse(body);
+    var token = query.access_token;
+
+    request
+      .get(strategy.profileUrl)
+      .query({
+        access_token: token
+      })
+      .end(strategy.onProfile.bind({}, token, req, next));
   };
 
-}
+  /**
+   * Set req.oauth when user profile is retrieved
+   * @param {string} token
+   * @param {http.IncomingMessage} req
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   response
+   * @param {object}   body
+   */
+  strategy.onProfile = function(token, req, next, err, response, body) {
+    if (err) {
+      return next(err);
+    }
 
-/**
- * Export a factory function that returns a new Github
- * @param  {Object} config Object containing API keys
- * @return {Github}
- */
-module.exports = function(config) {
-  return new Github(config);
+    req.oauth = {
+      provider: 'github',
+      token: token,
+      profile: body
+    };
+
+    next();
+  };
+
+  return strategy;
 };
