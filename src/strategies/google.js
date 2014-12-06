@@ -6,17 +6,17 @@
  * @private
  */
 var _ = require('lodash');
-var qs = require("querystring");
-var REST = require("restler");
+var qs = require('querystring');
+var request = require('superagent');
 
 /**
+ * Factory function for creating Google authentication strategy
  * @param config
- * @returns {Object}
- * @constructor
+ * @returns {object}
  */
 module.exports = function Google(config) {
 
-  var self = _.extend({}, config);
+  var strategy = _.extend({}, config);
 
   /**
    * Check for necessary elements
@@ -27,48 +27,89 @@ module.exports = function Google(config) {
     }
   });
 
-  self.oauth_url = "https://accounts.google.com/o/oauth2/auth?";
-  self.access_token_url = "https://accounts.google.com/o/oauth2/token?";
-  self.profile_url = "https://www.googleapis.com/plus/v1/people/me?";
+  strategy.authorizeUrl = "https://accounts.google.com/o/oauth2/auth?";
+  strategy.tokenUrl = "https://accounts.google.com/o/oauth2/token?";
+  strategy.profileUrl = "https://www.googleapis.com/plus/v1/people/me?";
 
-  self.authorize = function(req, res) {
-    res.redirect(self.oauth_url+qs.stringify({
+  /**
+   * Authorize user
+   * @param  {IncomingMessage} req
+   * @param  {ServerResponse} res
+   */
+  strategy.authorize = function(req, res) {
+    res.redirect(strategy.authorizeUrl+qs.stringify({
       response_type: "code",
-      client_id: self.client_id,
-      redirect_uri: self.redirect_uri,
+      client_id: strategy.client_id,
+      redirect_uri: strategy.redirect_uri,
       scope: "email profile"
     }));
   };
 
-  self.callback = function(req, res, next) {
-    REST.post(self.access_token_url, {
-      data: {
+  /**
+   * Handle callback request from provider
+   * @param  {http.IncomingMessage}   req
+   * @param  {http.ServerResponse}   res
+   * @param  {Function} next
+   */
+  strategy.callback = function(req, res, next) {
+    request
+      .post(strategy.tokenUrl)
+      .data({
         code: req.query.code,
-        client_id: self.client_id,
-        client_secret: self.client_secret,
-        redirect_uri: self.redirect_uri,
+        client_id: strategy.client_id,
+        client_secret: strategy.client_secret,
+        redirect_uri: strategy.redirect_uri,
         grant_type: "authorization_code"
-      }
-    }).on("complete", function(data) {
-      var access_token = data.access_token;
-
-      self.get_profile(access_token, function(profile) {
-        req.oauth = {
-          provider: 'google',
-          token: access_token,
-          profile: profile
-        };
-        return next();
-      });
-    });
+      })
+      .end(strategy.onToken.bind({}, req, next));
   };
 
-  self.get_profile = function(access_token, callback) {
-    REST.get(self.profile_url+qs.stringify({
-      access_token: access_token
-    })).on("complete", callback);
+  /**
+   * Retrieve user profile when token is received
+   * @param {http.IncomingMessage} req
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   response
+   * @param {object}   body
+   */
+  strategy.onToken = function(req, next, err, response, body) {
+    if (err) {
+      return next(err);
+    }
+
+    var token = body.access_token;
+
+    request
+      .get(strategy.profileUrl)
+      .query({
+        access_token: token
+      })
+      .end(strategy.onProfile.bind({}, token, req, next));
   };
 
-  return self;
+  /**
+   * Set req.oauth when user profile is retrieved
+   * @param {string} token
+   * @param {http.IncomingMessage} req
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   response
+   * @param {object}   body
+   */
+  strategy.onProfile = function(token, req, next, err, response, body) {
+    if (err) {
+      return next(err);
+    }
+
+    req.oauth = {
+      provider: 'google',
+      token: token,
+      profile: body
+    };
+
+    return next();
+  };
+
+  return strategy;
 
 };
