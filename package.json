@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jasmine-node ."
+    "test": "jasmine-node . --verbose"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   "dependencies": {
     "lodash": "^2.4.1",
     "oauth": "^0.9.12",
-    "restler": "^3.2.2"
+    "restler": "^3.2.2",
+    "superagent": "^0.21.0"
   }
 }
