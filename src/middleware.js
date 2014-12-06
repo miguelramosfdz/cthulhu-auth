@@ -13,6 +13,7 @@ exports.deserializeCallback = function(req, next, err, user) {
     return next(err);
   }
 
+  req.user = user;
   req.session.user = user;
   next();
 };

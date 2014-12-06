@@ -35,6 +35,7 @@ describe('middleware', function() {
     it('should set req.session.user to user', function() {
       var user = { id: '1234' };
       middleware.deserializeCallback(req, next, undefined, user);
+      expect(req.user).toEqual(user);
       expect(req.session.user).toEqual(user);
       expect(next).toHaveBeenCalled();
     });
