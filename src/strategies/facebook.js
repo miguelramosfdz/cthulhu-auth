@@ -32,10 +32,9 @@ module.exports = function Facebook(options) {
   strategy.profileUrl = "https://graph.facebook.com/me?";
 
   /**
-   * Send request to authorize request to Facebook
-   * @param {http.IncomingMessage} req
-   * @param {express.response} res
-   * @param {Function} next
+   * Authorize user
+   * @param  {IncomingMessage} req
+   * @param  {ServerResponse} res
    */
   strategy.authorize = function(req, res, next) {
     res.redirect(strategy.authorizeUrl + qs.stringify({
@@ -46,6 +45,12 @@ module.exports = function Facebook(options) {
     }));
   };
 
+  /**
+   * Handle callback request from provider
+   * @param  {http.IncomingMessage}   req
+   * @param  {http.ServerResponse}   res
+   * @param  {Function} next
+   */
   strategy.callback = function(req, res, next) {
     request
       .get(strategy.tokenUrl)
@@ -55,10 +60,18 @@ module.exports = function Facebook(options) {
         client_secret: strategy.app_secret,
         code: req.query.code
       })
-      .end(strategy.onCode.bind({}, req, next));
+      .end(strategy.onToken.bind({}, req, next));
   };
 
-  strategy.onCode = function(req, next, err, response, body) {
+  /**
+   * Retrieve user profile when token is received
+   * @param {http.IncomingMessage}   req
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   response
+   * @param {object}   body
+   */
+  strategy.onToken = function(req, next, err, response, body) {
     if (err) {
       return next(err);
     }
