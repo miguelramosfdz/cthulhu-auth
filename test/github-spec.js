@@ -72,14 +72,14 @@ describe('Strategy: Github', function() {
     });
   });
 
-  describe('.onCode()', function() {
+  describe('.onToken()', function() {
     it('should call next if error', function() {
       var next = jasmine.createSpy('next');
-      auth.onCode(null, next, true, null, null);
+      auth.onToken(null, next, true, null, null);
       expect(next).toHaveBeenCalledWith(true);
     });
     it('should get profile', function() {
-      auth.onCode(null, null, null, null, 'access_token=1234');
+      auth.onToken(null, null, null, null, 'access_token=1234');
       expect(request.get).toHaveBeenCalledWith(auth.profileUrl);
       expect(query).toHaveBeenCalledWith({
         access_token: '1234'
