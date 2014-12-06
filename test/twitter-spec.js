@@ -1,8 +1,17 @@
 'use strict';
 
-describe('Util: OAuth', function() {
+describe('Strategy: Twitter', function() {
 
+  var auth;
   var twitter = require('../src').TwitterStrategy;
+
+  beforeEach(function() {
+    auth = twitter({
+      consumer_key: 'fooId',
+      consumer_secret: 'fooSecret',
+      callback_url: 'http://foo.com'
+    });
+  });
 
   it('should throw error if no client_id', function() {
     expect(twitter.bind(this, {
@@ -25,15 +34,28 @@ describe('Util: OAuth', function() {
     })).toThrow('Must supply Twitter Strategy with callback_url');
   });
 
-  it('should set Twitter', function() {
-    var auth = twitter({
-      consumer_key: 'fooId',
-      consumer_secret: 'fooSecret',
-      callback_url: 'http://foo.com'
+  describe('strategy', function() {
+    it('should have request_token_url', function() {
+      expect(auth.request_token_url).not.toEqual(undefined);
     });
-    expect(auth.consumer_key).toEqual('fooId');
-    expect(auth.consumer_secret).toEqual('fooSecret');
-    expect(auth.callback_url).toEqual('http://foo.com');
+    it('should have access_token_url', function() {
+      expect(auth.access_token_url).not.toEqual(undefined);
+    });
+    it('should have profile_url', function() {
+      expect(auth.profile_url).not.toEqual(undefined);
+    });
+    it('should have authorize_url', function() {
+      expect(auth.authorize_url).not.toEqual(undefined);
+    });
+    it('should have client_id', function() {
+      expect(auth.consumer_key).toEqual('fooId');
+    });
+    it('should have client_secret', function() {
+      expect(auth.consumer_secret).toEqual('fooSecret');
+    });
+    it('should have callback_url', function() {
+      expect(auth.callback_url).toEqual('http://foo.com');
+    });
   });
 
 });

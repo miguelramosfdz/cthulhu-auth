@@ -49,10 +49,25 @@ describe('Strategy: Google', function() {
     })).toThrow('Must supply Google Strategy with redirect_uri');
   });
 
-  it('should set config', function() {
-    expect(auth.client_id).toEqual('fooId');
-    expect(auth.client_secret).toEqual('fooSecret');
-    expect(auth.redirect_uri).toEqual('http://foo.com');
+  describe('strategy', function() {
+    it('should have authorizeUrl', function() {
+      expect(auth.authorizeUrl).not.toEqual(undefined);
+    });
+    it('should have tokenUrl', function() {
+      expect(auth.tokenUrl).not.toEqual(undefined);
+    });
+    it('should have profileUrl', function() {
+      expect(auth.profileUrl).not.toEqual(undefined);
+    });
+    it('should have client_id', function() {
+      expect(auth.client_id).toEqual('fooId');
+    });
+    it('should have client_secret', function() {
+      expect(auth.client_secret).toEqual('fooSecret');
+    });
+    it('should have callback_url', function() {
+      expect(auth.redirect_uri).toEqual('http://foo.com');
+    });
   });
 
   describe('.callback()', function() {

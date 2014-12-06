@@ -47,10 +47,25 @@ describe('Strategy: Foursquare', function() {
     })).toThrow('Must supply Foursquare Strategy with callback_url');
   });
 
-  it('should set Foursquare', function() {
-    expect(auth.client_id).toEqual('fooId');
-    expect(auth.client_secret).toEqual('fooSecret');
-    expect(auth.callback_url).toEqual('http://foo.com');
+  describe('strategy', function() {
+    it('should have authorizeUrl', function() {
+      expect(auth.authorizeUrl).not.toEqual(undefined);
+    });
+    it('should have tokenUrl', function() {
+      expect(auth.tokenUrl).not.toEqual(undefined);
+    });
+    it('should have profileUrl', function() {
+      expect(auth.profileUrl).not.toEqual(undefined);
+    });
+    it('should have client_id', function() {
+      expect(auth.client_id).toEqual('fooId');
+    });
+    it('should have client_secret', function() {
+      expect(auth.client_secret).toEqual('fooSecret');
+    });
+    it('should have callback_url', function() {
+      expect(auth.callback_url).toEqual('http://foo.com');
+    });
   });
 
   describe('.authorize()', function() {
