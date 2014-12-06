@@ -32,6 +32,11 @@ module.exports = function GithubStrategy(config) {
   strategy.tokenUrl = 'https://github.com/login/oauth/access_token';
   strategy.profileUrl = 'https://api.github.com/user?';
 
+  /**
+   * Authorize user
+   * @param  {IncomingMessage} req
+   * @param  {ServerResponse} res
+   */
   strategy.authorize = function(req, res) {
     res.redirect(strategy.authorizeUrl+qs.stringify({
       client_id: strategy.client_id,
@@ -50,13 +55,13 @@ module.exports = function GithubStrategy(config) {
   strategy.callback = function(req, res, next) {
     request
       .post(strategy.tokenUrl)
-      .query({
+      .data({
         client_id: strategy.client_id,
         client_secret: strategy.client_secret,
         code: req.query.code,
         redirect_uri: strategy.callback_url
       })
-      .end(strategy.onCode.bind({}, req, next));
+      .end(strategy.onToken.bind({}, req, next));
   };
 
   /**
@@ -67,11 +72,11 @@ module.exports = function GithubStrategy(config) {
    * @param {object}   response
    * @param {object}   body
    */
-  strategy.onCode = function(req, next, err, response, body) {
+  strategy.onToken = function(req, next, err, response, body) {
     if (err) {
       return next(err);
     }
-    
+
     var query = qs.parse(body);
     var token = query.access_token;
 
