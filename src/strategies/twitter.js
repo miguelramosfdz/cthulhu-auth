@@ -10,7 +10,7 @@ var oauth = require("oauth");
 
 module.exports = function Twitter(options) {
 
-  var self = _.extend({}, options);
+  var strategy = _.extend({}, options);
 
   /**
    * Check for necessary configurations
@@ -21,76 +21,124 @@ module.exports = function Twitter(options) {
     }
   });
 
-  self.request_token_url = "https://twitter.com/oauth/request_token";
-  self.access_token_url = "https://twitter.com/oauth/access_token";
-  self.profile_url = "https://api.twitter.com/1.1/account/verify_credentials.json";
-  self.authorize_url = "https://twitter.com/oauth/authorize?oauth_token=";
+  strategy.request_token_url = "https://twitter.com/oauth/request_token";
+  strategy.access_token_url = "https://twitter.com/oauth/access_token";
+  strategy.profile_url = "https://api.twitter.com/1.1/account/verify_credentials.json";
+  strategy.authorize_url = "https://twitter.com/oauth/authorize?oauth_token=";
 
   /**
    * Twitter OAuth consumer
    * @type {oauth.OAuth}
    */
-  self.consumer = new oauth.OAuth(
-    self.request_token_url,
-    self.access_token_url,
-    self.consumer_key,
-    self.consumer_secret,
+  strategy.consumer = new oauth.OAuth(
+    strategy.request_token_url,
+    strategy.access_token_url,
+    strategy.consumer_key,
+    strategy.consumer_secret,
     "1.0A",
-    self.callback_url,
+    strategy.callback_url,
     "HMAC-SHA1"
   );
 
-  self.authorize = function(req, res) {
-    self.consumer.getOAuthRequestToken(function(error, oauthToken, oauthTokenSecret) {
-      if (error) {
-        req.flash("error", "Error getting Twitter request token.");
-        res.redirect("/account");
-      } else {
-        self.oauthRequestToken = oauthToken;
-        self.oauthRequestTokenSecret = oauthTokenSecret;
-        res.redirect(self.authorize_url+self.oauthRequestToken);
-      }
-    });
+  /**
+   * Authorize user
+   * @param  {IncomingMessage}   req
+   * @param  {ServerResponse}   res
+   * @param  {Function} next
+   */
+  strategy.authorize = function(req, res, next) {
+    strategy
+      .consumer
+      .getOAuthRequestToken(strategy.onRequestToken.bind({}, res, next));
   };
 
-  self.callback = function(req, res, next) {
-    self.consumer.getOAuthAccessToken(
-      self.oauthRequestToken,
-      self.oauthRequestTokenSecret,
-      req.query.oauth_verifier,
-      function(error, access_token, secret) {
-        if (error) {
-          req.flash("error", "Error getting Twitter access token.");
-          return res.redirect("/account");
-        }
-        /**
-         * Clear req.session oauth values
-         */
-        delete self.oauthRequestToken;
-        delete self.oauthRequestTokenSecret;
+  /**
+   * Handle response from Twitter with request token
+   * @param {ServerResponse}   res
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {string}   token
+   * @param {string}   secret
+   */
+  strategy.onRequestToken = function(res, next, err, token, secret) {
+    if (err) {
+      return next(err);
+    }
 
-        /**
-         * Save token and tokenSecret to user
-         */
-        self.get_profile(access_token, secret, function (err, profile) {
-          req.oauth = {
-            provider: 'twitter',
-            token: access_token,
-            secret: secret,
-            profile: profile
-          };
-          return next();
-        });
-      }
+    strategy.oauthRequestToken = token;
+    strategy.oauthRequestTokenSecret = secret;
+    res.redirect(strategy.authorize_url+strategy.oauthRequestToken);
+  };
+
+  /**
+   * Handle callback request from provider
+   * @param  {http.IncomingMessage}   req
+   * @param  {http.ServerResponse}   res
+   * @param  {Function} next
+   */
+  strategy.callback = function(req, res, next) {
+    strategy.consumer.getOAuthAccessToken(
+      strategy.oauthRequestToken,
+      strategy.oauthRequestTokenSecret,
+      req.query.oauth_verifier,
+      strategy.onAccessToken.bind({}, req, res, next)
     );
   };
 
-  self.get_profile = function(access_token, secret, callback) {
-    self.consumer.get(self.profile_url, access_token, secret, function(err, data) {
-      callback(err, JSON.parse(data));
-    });
+  /**
+   * Retrieve user profile when token is received
+   * @param {IncomingMessage}   req
+   * @param {ServerResponse}   res
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   response
+   * @param {object}   body
+   */
+  strategy.onAccessToken = function(req, res, next, err, token, secret) {
+    if (err) {
+      return next(err);
+    }
+
+    /**
+     * Clear request token and secret
+     */
+    delete strategy.oauthRequestToken;
+    delete strategy.oauthRequestTokenSecret;
+
+    strategy
+      .consumer
+      .get(
+        strategy.profile_url,
+        token,
+        secret,
+        strategy.onProfile.bind({}, token, secret, req, next)
+      );
   };
 
-  return self;
+  /**
+   * Set req.oauth when user profile is retrieved
+   * @param {string} token
+   * @param {string} secret
+   * @param {http.IncomingMessage} req
+   * @param {Function} next
+   * @param {?Error}   err
+   * @param {object}   data
+   */
+  strategy.onProfile = function (token, secret, req, next, err, data) {
+    if (err) {
+      return next(err);
+    }
+
+    req.oauth = {
+      provider: 'twitter',
+      token: token,
+      secret: secret,
+      profile: JSON.parse(data)
+    };
+
+    return next();
+  };
+
+  return strategy;
 
 };
