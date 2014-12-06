@@ -17,7 +17,7 @@ exports.isAuthenticated = function() {
  * @param  {Object} options
  */
 exports.logIn = function(user) {
-  this.session.user = user.id;
+  this.session.user = user;
 };
 
 /**

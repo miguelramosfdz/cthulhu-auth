@@ -30,8 +30,9 @@ describe('request', function() {
 
   describe('.logIn()', function() {
     it('should set value of req.session', function() {
-      request.logIn.call(req, { id: 'foo' });
-      expect(req.session.user).toEqual('foo');
+      var user = { id: 'foo' };
+      request.logIn.call(req, user);
+      expect(req.session.user).toEqual(user);
     });
   });
 

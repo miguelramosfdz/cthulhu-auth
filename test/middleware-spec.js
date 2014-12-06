@@ -27,4 +27,17 @@ describe('middleware', function() {
     });
   });
 
+  describe('.deserializeCallback()', function() {
+    it('should call next with error if error', function() {
+      middleware.deserializeCallback(req, next, true, undefined);
+      expect(next).toHaveBeenCalledWith(true);
+    });
+    it('should set req.session.user to user', function() {
+      var user = { id: '1234' };
+      middleware.deserializeCallback(req, next, undefined, user);
+      expect(req.session.user).toEqual(user);
+      expect(next).toHaveBeenCalled();
+    });
+  });
+
 });
