@@ -23,7 +23,6 @@ exports.Google = require('./strategies/google');
 exports.Twitter = require('./strategies/twitter');
 exports.Foursquare = require('./strategies/foursquare');
 exports.Github = require('./strategies/github');
-exports.Authy = require('./strategies/authy');
 
 /**
  * Initialize Cthulhu Auth
