@@ -1,21 +1,19 @@
 'use strict';
 
-var cthulhuAuth = require('../src');
 var http = require('http');
+var request = require('../src/request');
 
 describe('request', function() {
 
-  var request, req, next;
+  var req, next;
 
   beforeEach(function() {
     next = jasmine.createSpy('next');
-    request = cthulhuAuth.request;
     req = http.IncomingMessage;
     req.session = {};
   });
 
   afterEach(function() {
-    request = null;
     req = null;
   });
 
@@ -34,21 +32,6 @@ describe('request', function() {
     it('should set value of req.session', function() {
       request.logIn.call(req, { id: 'foo' });
       expect(req.session.user).toEqual('foo');
-    });
-  });
-
-  describe('.deserializeUser()', function() {
-    var callback = jasmine.createSpy('callback');
-    it('should call next if no req.session.user', function() {
-      req.session.user = undefined;
-      request.deserializeUser(callback)(req, undefined, next);
-      expect(next).toHaveBeenCalled();
-    });
-    it('should call callback if req.session.user', function() {
-      req.session.user = '1234';
-      request.deserializeUser(callback)(req, undefined, next);
-      expect(callback).toHaveBeenCalled();
-      expect(next).not.toHaveBeenCalled();
     });
   });
 

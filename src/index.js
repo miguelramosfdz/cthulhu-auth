@@ -1,7 +1,7 @@
 "use strict";
 
-var request =
-exports.request = require("./request");
+var request = require('./request');
+var middleware = require('./middleware');
 
 /**
  * Strategies
@@ -12,6 +12,9 @@ exports.Google = require('./strategies/google');
 exports.Twitter = require('./strategies/twitter');
 exports.Foursquare = require('./strategies/foursquare');
 exports.Github = require('./strategies/github');
+
+// Export deserializeUser
+exports.deserializeUser = middleware.deserializeUser;
 
 /**
  * Initialize Cthulhu Auth
