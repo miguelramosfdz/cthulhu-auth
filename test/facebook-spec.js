@@ -2,7 +2,7 @@
 
 describe('Strategy: Facebook', function() {
 
-  var auth, res, query, end;
+  var auth, res, query, end, next;
   var qs = require('querystring');
   var request = require('superagent');
   var facebook = require('../src').FacebookStrategy;
@@ -13,6 +13,7 @@ describe('Strategy: Facebook', function() {
       app_secret: 'fooSecret',
       callback_url: 'http://foo.com'
     });
+    next = jasmine.createSpy('next');
     res = {
       redirect: jasmine.createSpy('redirect')
     };
@@ -102,12 +103,19 @@ describe('Strategy: Facebook', function() {
 
   describe('.onToken()', function() {
     it('should call next if error', function() {
-      var next = jasmine.createSpy('next');
-      auth.onToken(null, next, true, null, null);
+      var response = {
+        error: true,
+        text: undefined
+      };
+      auth.onToken(undefined, next, response);
       expect(next).toHaveBeenCalledWith(true);
     });
     it('should get profile', function() {
-      auth.onToken(null, null, null, null, 'access_token=1234');
+      var response = {
+        error: false,
+        text: 'access_token=1234'
+      };
+      auth.onToken(undefined, undefined, response);
       expect(request.get).toHaveBeenCalledWith(auth.profileUrl);
       expect(query).toHaveBeenCalledWith({
         access_token: '1234'
@@ -117,10 +125,19 @@ describe('Strategy: Facebook', function() {
   });
 
   describe('.onProfile()', function() {
+    it('should call next with error if error', function() {
+      var response = {
+        error: true
+      };
+      auth.onProfile('1234', undefined, next, response);
+      expect(next).toHaveBeenCalledWith(true);
+    });
     it('should set req.oauth and call next', function() {
       var req = {};
-      var next = jasmine.createSpy('next');
-      auth.onProfile('1234', req, next, null, null, { user: 'user' });
+      var response = {
+        body: { user: 'user' }
+      };
+      auth.onProfile('1234', req, next, response);
       expect(req.oauth).toEqual({
         provider: 'facebook',
         token: '1234',

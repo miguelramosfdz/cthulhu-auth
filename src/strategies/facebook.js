@@ -66,25 +66,18 @@ module.exports = function Facebook(options) {
    * Retrieve user profile when token is received
    * @param {http.IncomingMessage}   req
    * @param {Function} next
-   * @param {?Error}   err
    * @param {object}   response
-   * @param {object}   body
    */
-  strategy.onToken = function(req, next, err, response, body) {
-    if (err) {
-      return next(err);
+  strategy.onToken = function(req, next, response) {
+    if (response.error) {
+      return next(response.error);
     }
-
-    /**
-     * Parse query string returned from Facebook
-     */
-    var query = qs.parse(body);
 
     /**
      * Get access_token
      * @type {String}
      */
-    var token = query.access_token;
+    var token = qs.parse(response.text).access_token;
 
     request
       .get(strategy.profileUrl)
@@ -99,20 +92,18 @@ module.exports = function Facebook(options) {
    * @param {string} token
    * @param {http.IncomingMessage} req
    * @param {function} next
-   * @param {?Error} err
    * @param {object} response
-   * @param {object} body
    */
-  strategy.onProfile = function(token, req, next, err, response, body) {
-    if (err) {
-      return next(err);
+  strategy.onProfile = function(token, req, next, response) {
+    if (response.error) {
+      return next(response.error);
     }
 
     // Set req.oauth
     req.oauth = {
       provider: 'facebook',
       token: token,
-      profile: body
+      profile: response.body
     };
 
     return next();
