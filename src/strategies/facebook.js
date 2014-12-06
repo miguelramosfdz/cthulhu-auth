@@ -103,7 +103,7 @@ module.exports = function Facebook(options) {
     req.oauth = {
       provider: 'facebook',
       token: token,
-      profile: response.body
+      profile: JSON.parse(response.text)
     };
 
     return next();

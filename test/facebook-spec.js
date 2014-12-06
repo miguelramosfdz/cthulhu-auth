@@ -135,7 +135,7 @@ describe('Strategy: Facebook', function() {
     it('should set req.oauth and call next', function() {
       var req = {};
       var response = {
-        body: { user: 'user' }
+        text: JSON.stringify({ user: 'user' })
       };
       auth.onProfile('1234', req, next, response);
       expect(req.oauth).toEqual({
