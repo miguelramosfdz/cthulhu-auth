@@ -20,7 +20,8 @@ describe('Strategy: Google', function() {
       query: query
     });
     spyOn(request, 'post').andReturn({
-      send: send
+      send: send,
+      set: jasmine.createSpy('set').andReturn({ send: send })
     });
   });
 
