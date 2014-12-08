@@ -54,7 +54,7 @@ module.exports = function Google(config) {
   strategy.callback = function(req, res, next) {
     request
       .post(strategy.tokenUrl)
-      .data({
+      .send({
         code: req.query.code,
         client_id: strategy.client_id,
         client_secret: strategy.client_secret,
@@ -68,16 +68,14 @@ module.exports = function Google(config) {
    * Retrieve user profile when token is received
    * @param {http.IncomingMessage} req
    * @param {Function} next
-   * @param {?Error}   err
    * @param {object}   response
-   * @param {object}   body
    */
-  strategy.onToken = function(req, next, err, response, body) {
-    if (err) {
-      return next(err);
+  strategy.onToken = function(req, next, response) {
+    if (response.error) {
+      return next(response.error);
     }
 
-    var token = body.access_token;
+    var token = JSON.parse(response.text).access_token;
 
     request
       .get(strategy.profileUrl)
@@ -92,19 +90,17 @@ module.exports = function Google(config) {
    * @param {string} token
    * @param {http.IncomingMessage} req
    * @param {Function} next
-   * @param {?Error}   err
    * @param {object}   response
-   * @param {object}   body
    */
-  strategy.onProfile = function(token, req, next, err, response, body) {
-    if (err) {
-      return next(err);
+  strategy.onProfile = function(token, req, next, response) {
+    if (response.error) {
+      return next(response.error);
     }
 
     req.oauth = {
       provider: 'google',
       token: token,
-      profile: body
+      profile: JSON.parse(response.text)
     };
 
     return next();
