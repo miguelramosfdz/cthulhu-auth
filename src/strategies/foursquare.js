@@ -49,34 +49,50 @@ module.exports = function Foursquare(options) {
         redirect_uri: strategy.callback_url,
         code: req.query.code
       })
-      .end(strategy.onCode.bind({}, req, res, next));
+      .end(strategy.onToken.bind({}, req, res, next));
   };
 
-  strategy.onCode = function(req, res, next, err, response, body) {
-    if (err) {
-      return next(err);
+  /**
+   * Retrieve user profile when token is received
+   * @param {http.IncomingMessage} req
+   * @param {Function} next
+   * @param {object}   response
+   */
+  strategy.onToken = function(req, res, next, response) {
+    if (response.error) {
+      return next(response.error);
     }
 
-    var token = body.access_token;
+    var token = JSON.parse(response.body).access_token;
 
-    /**
-     * Get profile of user
-     */
+    // Get profile of user
     rest
       .get(strategy.profileUrl)
       .query({
-        oauth_token: body.access_token,
+        oauth_token: token,
         v: "20140806"
       })
-      .end(strategy.onProfile.bind(body.access_token, req, next));
+      .end(strategy.onProfile.bind(token, req, next));
   };
 
-  strategy.onProfile = function(token, req, next, err, response, body) {
+  /**
+   * Set req.oauth when user profile is retrieved
+   * @param {string} token
+   * @param {http.IncomingMessage} req
+   * @param {Function} next
+   * @param {object}   response
+   */
+  strategy.onProfile = function(token, req, next, response) {
+    if (response.error) {
+      return next(response.error);
+    }
+
     req.oauth = {
       provider: 'foursquare',
       token: token,
-      profile: body.user
+      profile: JSON.parse(response.text).user
     };
+
     return next();
   };
 
