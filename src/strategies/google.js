@@ -28,7 +28,7 @@ module.exports = function Google(config) {
   });
 
   strategy.authorizeUrl = "https://accounts.google.com/o/oauth2/auth?";
-  strategy.tokenUrl = "https://accounts.google.com/o/oauth2/token?";
+  strategy.tokenUrl = "https://www.googleapis.com/oauth2/v3/token";
   strategy.profileUrl = "https://www.googleapis.com/plus/v1/people/me?";
 
   /**
@@ -38,10 +38,11 @@ module.exports = function Google(config) {
    */
   strategy.authorize = function(req, res) {
     res.redirect(strategy.authorizeUrl+qs.stringify({
-      response_type: "code",
+      response_type: 'code',
       client_id: strategy.client_id,
       redirect_uri: strategy.redirect_uri,
-      scope: "email profile"
+      scope: 'email profile',
+      approval_prompt: 'force'
     }));
   };
 
@@ -54,12 +55,13 @@ module.exports = function Google(config) {
   strategy.callback = function(req, res, next) {
     request
       .post(strategy.tokenUrl)
+      .set('Content-Type', 'application/x-www-form-urlencoded')
       .send({
         code: req.query.code,
         client_id: strategy.client_id,
         client_secret: strategy.client_secret,
         redirect_uri: strategy.redirect_uri,
-        grant_type: "authorization_code"
+        grant_type: 'authorization_code'
       })
       .end(strategy.onToken.bind({}, req, next));
   };
