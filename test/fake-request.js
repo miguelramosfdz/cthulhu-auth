@@ -3,7 +3,7 @@
 var end =
 exports.end = jasmine.createSpy('end');
 
-exports.data = jasmine.createSpy('data').andReturn({
+exports.send = jasmine.createSpy('send').andReturn({
   end: end
 });
 
