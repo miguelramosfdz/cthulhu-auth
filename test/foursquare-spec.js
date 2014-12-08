@@ -94,14 +94,16 @@ describe('Strategy: Foursquare', function() {
     });
   });
 
-  describe('.onCode()', function() {
+  describe('.onToken()', function() {
     it('should call next if error', function() {
       var next = jasmine.createSpy('next');
-      auth.onCode(null, null, next, true, null, { access_token: '1234' });
+      auth.onToken(null, null, next, { error: true });
       expect(next).toHaveBeenCalledWith(true);
     });
     it('should get profile', function() {
-      auth.onCode(null, null, null, null, null, { access_token: '1234' });
+      auth.onToken(null, null, null, {
+        body: JSON.stringify({ access_token: '1234' })
+      });
       expect(request.get).toHaveBeenCalledWith(auth.profileUrl);
       expect(query).toHaveBeenCalledWith({
         oauth_token: '1234',
@@ -115,7 +117,9 @@ describe('Strategy: Foursquare', function() {
     it('should set req.oauth and call next', function() {
       var req = {};
       var next = jasmine.createSpy('next');
-      auth.onProfile('1234', req, next, null, null, { user: 'user' });
+      auth.onProfile('1234', req, next, {
+        text: JSON.stringify({ user: 'user' })
+      });
       expect(req.oauth).toEqual({
         provider: 'foursquare',
         token: '1234',

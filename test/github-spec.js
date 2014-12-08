@@ -2,7 +2,7 @@
 
 describe('Strategy: Github', function() {
 
-  var auth, res, query, end, data;
+  var auth, res, query, end, send;
   var fakerequest = require('./fake-request');
   var request = fakerequest.request;
   var github = require('../src').GithubStrategy;
@@ -16,14 +16,14 @@ describe('Strategy: Github', function() {
     res = {
       redirect: jasmine.createSpy('redirect')
     };
-    data = fakerequest.data;
+    send = fakerequest.send;
     query = fakerequest.query;
     end = fakerequest.end;
     spyOn(request, 'get').andReturn({
       query: query
     });
     spyOn(request, 'post').andReturn({
-      data: data
+      send: send
     });
   });
 
@@ -77,7 +77,7 @@ describe('Strategy: Github', function() {
     it('should send GET request with correct params', function() {
       auth.callback({ query: { code: '1234'} });
       expect(request.post).toHaveBeenCalledWith(auth.tokenUrl);
-      expect(data).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         client_id: 'fooId',
         redirect_uri: 'http://foo.com',
         client_secret: 'fooSecret',
@@ -90,11 +90,11 @@ describe('Strategy: Github', function() {
   describe('.onToken()', function() {
     it('should call next if error', function() {
       var next = jasmine.createSpy('next');
-      auth.onToken(null, next, true, null, null);
+      auth.onToken(null, next, { error: true });
       expect(next).toHaveBeenCalledWith(true);
     });
     it('should get profile', function() {
-      auth.onToken(null, null, null, null, 'access_token=1234');
+      auth.onToken(null, null, { body: 'access_token=1234' });
       expect(request.get).toHaveBeenCalledWith(auth.profileUrl);
       expect(query).toHaveBeenCalledWith({
         access_token: '1234'
@@ -107,7 +107,9 @@ describe('Strategy: Github', function() {
     it('should set req.oauth and call next', function() {
       var req = {};
       var next = jasmine.createSpy('next');
-      auth.onProfile('1234', req, next, null, null, { user: 'user' });
+      auth.onProfile('1234', req, next, {
+        text: JSON.stringify({ user: 'user' })
+      });
       expect(req.oauth).toEqual({
         provider: 'github',
         token: '1234',

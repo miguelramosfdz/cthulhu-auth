@@ -2,7 +2,7 @@
 
 describe('Strategy: Google', function() {
 
-  var auth, res, query, data, end;
+  var auth, res, query, send, end;
   var google = require('../src').GoogleStrategy;
   var fakerequest = require('./fake-request');
   var request = fakerequest.request;
@@ -15,12 +15,12 @@ describe('Strategy: Google', function() {
     });
     query = fakerequest.query;
     end = fakerequest.end;
-    data = fakerequest.data;
+    send = fakerequest.send;
     spyOn(request, 'get').andReturn({
       query: query
     });
     spyOn(request, 'post').andReturn({
-      data: data
+      send: send
     });
   });
 
@@ -74,7 +74,7 @@ describe('Strategy: Google', function() {
     it('should send GET request with correct params', function() {
       auth.callback({ query: { code: '1234'} });
       expect(request.post).toHaveBeenCalledWith(auth.tokenUrl);
-      expect(data).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         code: '1234',
         client_id: 'fooId',
         client_secret: 'fooSecret',
@@ -88,11 +88,13 @@ describe('Strategy: Google', function() {
   describe('.onToken()', function() {
     it('should call next if error', function() {
       var next = jasmine.createSpy('next');
-      auth.onToken(null, next, true, null, null);
+      auth.onToken(null, next, { error: true });
       expect(next).toHaveBeenCalledWith(true);
     });
     it('should get profile', function() {
-      auth.onToken(null, null, null, null, { access_token: '1234' });
+      auth.onToken(null, null, {
+        text: JSON.stringify({ access_token: '1234' })
+      });
       expect(request.get).toHaveBeenCalledWith(auth.profileUrl);
       expect(query).toHaveBeenCalledWith({
         access_token: '1234'
@@ -105,7 +107,9 @@ describe('Strategy: Google', function() {
     it('should set req.oauth and call next', function() {
       var req = {};
       var next = jasmine.createSpy('next');
-      auth.onProfile('1234', req, next, null, null, { user: 'user' });
+      auth.onProfile('1234', req, next, {
+        text: JSON.stringify({ user: 'user' })
+      });
       expect(req.oauth).toEqual({
         provider: 'google',
         token: '1234',
