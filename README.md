@@ -18,6 +18,8 @@ var app = require('cthulhu')({
 });
 var cthulhuAuth = require('cthulhu-auth');
 
+app.use(cthulhuAuth.setup)
+
 app.use(cthulhuAuth.deserializeUser(function(user, done) {
   // Find user and pass done error and user
   // Example for Mongoose:
