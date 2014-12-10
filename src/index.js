@@ -49,14 +49,11 @@ exports.deserializeUser = middleware.deserializeUser;
 
 /**
  * Initialize Cthulhu Auth
- * @return {Function}
  * @public
  */
-exports.initialize = function(config) {
-  return function(req, res, next) {
-    req.isAuthenticated = request.isAuthenticated;
-    req.login = request.logIn;
-    req.logout = request.logOut;
-    next();
-  };
+exports.setup = function(req, res, next) {
+  req.isAuthenticated = request.isAuthenticated;
+  req.login = request.logIn;
+  req.logout = request.logOut;
+  next();
 };
